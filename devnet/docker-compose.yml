@@ -1,0 +1,40 @@
+networks:
+  vpcbr:
+    name: erigonv3
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.10.10.0/24
+         gateway: 10.10.10.1
+
+services:
+  erigon-node1:
+    image: erigontech/erigon:${TAG:-latest}
+    build:
+      args:
+        UID: ${DOCKER_UID:-1000}
+        GID: ${DOCKER_GID:-1000}
+      context: .
+    command: erigon --datadir=dev --chain=dev --private.api.addr=0.0.0.0:9090 --mine --http.addr=0.0.0.0 --http.api=eth,erigon,web3,net,debug,trace,txpool,parity,admin --http.corsdomain="*"
+    ports: [ "127.0.0.1:8545:8545" ]
+    restart: unless-stopped
+    mem_swappiness: 0
+    user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000}
+    networks:
+      vpcbr:
+        ipv4_address: 10.10.10.2
+
+  erigon-node2:
+    image: erigontech/erigon:${TAG:-latest}
+    build:
+      args:
+        UID: ${DOCKER_UID:-1000}
+        GID: ${DOCKER_GID:-1000}
+      context: .
+    command: erigon --datadir=dev --chain=dev --private.api.addr=0.0.0.0:9090 --mine --http.addr=0.0.0.0 --http.api=eth,erigon,web3,net,debug,trace,txpool,parity,admin --http.corsdomain="*"
+    ports: [ "127.0.0.1:8546:8545" ]
+    mem_swappiness: 0
+    user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000}
+    networks:
+      vpcbr:
+        ipv4_address: 10.10.10.3
